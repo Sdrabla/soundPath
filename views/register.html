@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up - SoundPath</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #ACB0BD;
+            display: flex;
+            color: #fff;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .register-container {
+            background: #0B3948;
+            padding: 2rem 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            width: 380px;
+            text-align: center;
+        }
+        .register-container h2 {
+            margin-bottom: 1.5rem;
+        }
+        .google-btn {
+            background: #0B3948;
+            color: #fff;
+            border: 1px solid #ccc;
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .google-btn img {
+            width: 20px;
+            height: 20px;
+        }
+        .divider {
+            margin: 1.5rem 0;
+            display: flex;
+            align-items: center;
+            text-align: center;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+        }
+        .divider:not(:empty)::before {
+            margin-right: .75em;
+        }
+        .divider:not(:empty)::after {
+            margin-left: .75em;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .name-fields {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        .name-fields input {
+            flex: 1;
+            min-width: 0;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            background: #f9f9f9;
+            color: #222;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+        .name-fields input:focus {
+            border-color: #0B3948;
+            box-shadow: 0 0 0 2px #0B394880;
+            outline: none;
+            background: #fff;
+        }
+        input[type="text"], input[type="email"], input[type="password"] {
+            padding: 0.75rem;
+            width: 90%;;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            color: #000;
+        }
+        button[type="submit"] {
+            background: #E7EB90;
+            color: #000000;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+        }
+        .login-link {
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+        .login-link a {
+            color: #4285F4;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Create your SoundPath account</h2>
+        <button class="google-btn" onclick="window.location.href='/auth/google'">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+            Sign up with Google
+        </button>
+        <div class="divider">or</div>
+        <form action="/signup" method="POST" autocomplete="off">
+            <div class="name-fields">
+                <input type="text" name="firstName" placeholder="First Name" required>
+                <input type="text" name="lastName" placeholder="Last Name" required>
+            </div>
+            <input type="email" name="email" placeholder="Email" required autocomplete="username">
+            <input type="password" name="password" placeholder="Password" required autocomplete="new-password">
+            <button type="submit">Sign Up</button>
+        </form>
+        <div class="login-link">
+            Already have an account? <a href="login.html">Log in</a>
+        </div>
+    </div>
+</body>
+</html>
