@@ -14,6 +14,25 @@
             align-items: center;
             height: 100vh;
         }
+        .back-btn {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            background: #E7EB90;
+            color: #0B3948;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            transition: background 0.2s;
+        }
+        .back-btn:hover {
+            background: #d3d66e;
+        }
         .login-container {
             background: #0B3948;
             padding: 2rem 2.5rem;
@@ -92,6 +111,7 @@
     </style>
 </head>
 <body>
+    <a href="index.html" class="back-btn">&#8592; Back</a>
     <div class="login-container">
         <h2>Login to SoundPath</h2>
         <button class="google-btn" onclick="window.location.href='/auth/google'">
