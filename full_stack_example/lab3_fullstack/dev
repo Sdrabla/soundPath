@@ -31,47 +31,41 @@ wait_http() {
 
 open_browser() {
   echo "[INFO] Opening $FRONTEND_URL ..."
-
-  # --- Git Bash / MSYS on Windows ---
   if is_msys; then
-    if command -v powershell.exe >/dev/null 2>&1; then
-      (powershell.exe -NoLogo -NoProfile -Command "Start-Process '$FRONTEND_URL'" >/dev/null 2>&1 &) && return 0
-    fi
-    if command -v cmd.exe >/dev/null 2>&1; then
-      (cmd.exe /C start "" "$FRONTEND_URL" >/dev/null 2>&1 &) && return 0
-    fi
-    if [ -x "/c/Windows/explorer.exe" ]; then
-      (/c/Windows/explorer.exe "$FRONTEND_URL" >/dev/null 2>&1 &) && return 0
-    fi
-    if command -v rundll32.exe >/dev/null 2>&1; then
-      (rundll32.exe url.dll,FileProtocolHandler "$FRONTEND_URL" >/dev/null 2>&1 &) && return 0
-    fi
+    command -v powershell.exe >/dev/null 2>&1 && (powershell.exe -NoLogo -NoProfile -Command "Start-Process '$FRONTEND_URL'" >/dev/null 2>&1 &) && return 0
+    command -v cmd.exe       >/dev/null 2>&1 && (cmd.exe /C start "" "$FRONTEND_URL" >/dev/null 2>&1 &) && return 0
+    [ -x "/c/Windows/explorer.exe" ] && (/c/Windows/explorer.exe "$FRONTEND_URL" >/dev/null 2>&1 &) && return 0
+    command -v rundll32.exe  >/dev/null 2>&1 && (rundll32.exe url.dll,FileProtocolHandler "$FRONTEND_URL" >/dev/null 2>&1 &) && return 0
   fi
-
-  # --- WSL ---
   if is_wsl; then
-    if command -v wslview >/dev/null 2>&1; then
-      (wslview "$FRONTEND_URL" >/dev/null 2>&1 &) && return 0
-    fi
-    if command -v powershell.exe >/dev/null 2>&1; then
-      (powershell.exe -NoLogo -NoProfile -Command "Start-Process '$FRONTEND_URL'" >/dev/null 2>&1 &) && return 0
-    fi
-    if command -v cmd.exe >/dev/null 2>&1; then
-      (cmd.exe /C start "" "$FRONTEND_URL" >/dev/null 2>&1 &) && return 0
-    fi
+    command -v wslview        >/dev/null 2>&1 && (wslview "$FRONTEND_URL" >/dev/null 2>&1 &) && return 0
+    command -v powershell.exe >/dev/null 2>&1 && (powershell.exe -NoLogo -NoProfile -Command "Start-Process '$FRONTEND_URL'" >/dev/null 2>&1 &) && return 0
+    command -v cmd.exe        >/dev/null 2>&1 && (cmd.exe /C start "" "$FRONTEND_URL" >/dev/null 2>&1 &) && return 0
   fi
-
-  # --- Linux / macOS ---
-  if command -v xdg-open >/dev/null 2>&1; then (xdg-open "$FRONTEND_URL" >/dev/null 2>&1 &) && return 0; fi
-  if command -v open     >/dev/null 2>&1; then (open "$FRONTEND_URL"      >/dev/null 2>&1 &) && return 0; fi
-
+  command -v xdg-open >/dev/null 2>&1 && (xdg-open "$FRONTEND_URL" >/dev/null 2>&1 &) && return 0
+  command -v open     >/dev/null 2>&1 && (open "$FRONTEND_URL"      >/dev/null 2>&1 &) && return 0
   echo "[WARN] Could not auto-open. Please open: $FRONTEND_URL"
+}
+
+# Build JSON that matches BookCreate model. Prefers jq; falls back to manual escape.
+json_book_create() {
+  local title="$1" author="$2" year="$3" genre="${4:-}"
+  if command -v jq >/dev/null 2>&1; then
+    jq -n --arg title "$title" --arg author "$author" --argjson year "$year" --arg genre "$genre" '
+      {title:$title, author:$author, year:$year} + ( ($genre|length)>0 ? {genre:$genre} : {} )
+    '
+  else
+    # naive fallback; assumes no embedded quotes in inputs
+    local json='{"title":"'"$title"'","author":"'"$author"'","year":'"$year"
+    if [ -n "$genre" ]; then json+=',"genre":"'"$genre"'"'; fi
+    json+='}'
+    printf '%s' "$json"
+  fi
 }
 
 case "$CMD" in
   up)
     docker compose up -d --build
-    # Wait for backend first (so frontend proxy/API calls won't race)
     wait_http "$BASE_URL/ping" 60  || echo "[WARN] Backend not reachable yet: $BASE_URL"
     wait_http "$FRONTEND_URL"  60  || echo "[WARN] Frontend not reachable yet: $FRONTEND_URL"
     open_browser
@@ -106,64 +100,60 @@ case "$CMD" in
     ;;
 
   ping)
-    curl -s "$BASE_URL/ping" | pretty
+    curl -fsS "$BASE_URL/ping" | pretty
     ;;
 
-  books)
-    curl -s "$BASE_URL/books" | pretty
+  equipment)
+    curl -fsS "$BASE_URL/books" | pretty
+    ;;
+
+  equipment-user)
+    # Usage: ./dev books-user <USERNAME>
+    if [[ $# -lt 2 ]]; then
+      echo "Usage: ./dev books-user <USERNAME>"
+      exit 2
+    fi
+    curl -fsS "$BASE_URL/books?username=$2" | pretty
     ;;
 
   create)
     # Usage:
-    #   ./dev create "Title" "Author" [Year] [Genre] [Image] [Review]
-    #   or: TITLE="Title" AUTHOR="Author" YEAR=2008 GENRE="Fantasy" IMAGE="url" REVIEW="text" ./dev create
-    TITLE_ARG="${2-}"; AUTHOR_ARG="${3-}"; YEAR_ARG="${4-}"; GENRE_ARG="${5-}"; IMAGE_ARG="${6-}"; REVIEW_ARG="${7-}"
+    #   ./dev create "Title" "Author" YEAR ["Genre"]
+    #   or: TITLE="t" AUTHOR="a" YEAR=2008 GENRE="g" ./dev create
+    TITLE_ARG="${2-}"; AUTHOR_ARG="${3-}"; YEAR_ARG="${4-}"; GENRE_ARG="${5-}"
     TITLE="${TITLE:-${TITLE_ARG:-}}"
     AUTHOR="${AUTHOR:-${AUTHOR_ARG:-}}"
     YEAR="${YEAR:-${YEAR_ARG:-}}"
     GENRE="${GENRE:-${GENRE_ARG:-}}"
-    IMAGE="${IMAGE:-${IMAGE_ARG:-}}"
-    REVIEW="${REVIEW:-${REVIEW_ARG:-}}"
-    
-    if [[ -z "${TITLE}" || -z "${AUTHOR}" ]]; then
-      echo 'Usage: ./dev create "Title" "Author" [Year] [Genre] [Image] [Review]'
-      echo '   or: TITLE="Title" AUTHOR="Author" [YEAR=2008] [GENRE="Fantasy"] [IMAGE="url"] [REVIEW="text"] ./dev create'
+
+    if [[ -z "$TITLE" || -z "$AUTHOR" || -z "$YEAR" ]]; then
+      echo 'Usage: ./dev create "Title" "Author" YEAR ["Genre"]'
+      echo '   or: TITLE="Title" AUTHOR="Author" YEAR=2008 [GENRE="Fantasy"] ./dev create'
       exit 2
     fi
-    
-    # Build JSON dynamically
-    JSON='{"title":"'$TITLE'","author":"'$AUTHOR'"'
-    [[ -n "${YEAR}" ]] && JSON+=',\"year\":'$YEAR
-    [[ -n "${GENRE}" ]] && JSON+=',\"genre\":\"'$GENRE'\"'
-    [[ -n "${IMAGE}" ]] && JSON+=',\"image\":\"'$IMAGE'\"'
-    [[ -n "${REVIEW}" ]] && JSON+=',\"review\":\"'$REVIEW'\"'
-    JSON+='}'
-    
-    echo "DEBUG: JSON being sent: $JSON"
-    curl -s -X POST "$BASE_URL/books" -H 'Content-Type: application/json' -d "$JSON" | pretty || true
+    if ! [[ "$YEAR" =~ ^[0-9]+$ ]]; then
+      echo "YEAR must be an integer (got: $YEAR)"; exit 2
+    fi
+
+    PAYLOAD="$(json_book_create "$TITLE" "$AUTHOR" "$YEAR" "${GENRE:-}")"
+    curl -fsS -X POST "$BASE_URL/books" -H 'Content-Type: application/json' -d "$PAYLOAD" | pretty
     ;;
 
   get)
     # Usage: ./dev get <BOOK_ID>
-    if [[ $# -lt 2 ]]; then
-      echo "Usage: ./dev get <BOOK_ID>"
-      exit 2
-    fi
-    curl -s "$BASE_URL/books/$2" | pretty
+    if [[ $# -lt 2 ]]; then echo "Usage: ./dev get <BOOK_ID>"; exit 2; fi
+    curl -fsS "$BASE_URL/books/$2" | pretty
     ;;
 
   delete)
     # Usage: ./dev delete <BOOK_ID>
-    if [[ $# -lt 2 ]]; then
-      echo "Usage: ./dev delete <BOOK_ID>"
-      exit 2
-    fi
+    if [[ $# -lt 2 ]]; then echo "Usage: ./dev delete <BOOK_ID>"; exit 2; fi
     code=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE "$BASE_URL/books/$2")
     if [[ "$code" == "204" ]]; then
       echo '{"status":"deleted"}' | pretty
     else
-      curl -s "$BASE_URL/books/$2" | pretty
       echo "HTTP $code"
+      curl -fsS "$BASE_URL/books/$2" | pretty || true
     fi
     ;;
 
@@ -176,29 +166,26 @@ case "$CMD" in
 Usage: ./dev <command>
 
 Commands:
-  up        Build & start services, wait for backend & frontend, open browser
-  restart   Rebuild & restart, wait for backend & frontend, open browser
-  build     Build images only
-  down      Stop and remove containers & network
-  clean     Stop containers & also remove volumes (Mongo data)
-  logs      Follow logs
-  ps        Show service status
-  ping      GET /ping from backend
-  books     GET /books
-  create    POST /books
-  get       GET /books/<id>
-  delete    DELETE /books/<id>
-  open      Try to open the frontend URL in your browser
+  up           Build & start services, wait for backend & frontend, open browser
+  restart      Rebuild & restart, wait for backend & frontend, open browser
+  build        Build images only
+  down         Stop and remove containers & network
+  clean        Stop containers & also remove volumes (Mongo data)
+  logs         Follow logs
+  ps           Show service status
+  ping         GET /ping from backend
+  books        GET /books
+  books-user   GET /books?username=<user>
+  create       POST /books  (fields: title, author, year:int, genre?:string)
+  get          GET /books/<id>
+  delete       DELETE /books/<id>
+  open         Open the frontend URL in your browser
 
 Examples:
   ./dev up
-  ./dev down
-  ./dev restart
   ./dev ping
-  ./dev books
-  ./dev create "Help Me" "Matthew Brawders" 2025
-  ./dev create "Help Me" "Matthew Brawders" 2025 "Fantasy" "https://img/cover.jpg" "Loved it"
-  TITLE="PLEASE PLEASE PLEASE" AUTHOR="Matthew Brawders" YEAR=9999 ./dev create
+  ./dev equipment
+  ./dev create "1997 Red Strato Guitar" "Bill Faust" 325 "Selling"
   ./dev get 68a3fb47a4139dede9c2478b
   ./dev delete 68a3fb47a4139dede9c2478b
 USAGE

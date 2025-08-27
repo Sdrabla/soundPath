@@ -5,14 +5,13 @@ from typing import List
 import os
 
 from managers.books_manager import BooksManager
-from models.books_model import BookCreate, BookUpdate, BookOut  # <-- import shared models
+from models.books_model import BookCreate, BookUpdate, BookOut
 
 app = FastAPI(title="Books API")
 
-# CORS (tighten origins if you like)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # e.g. ["http://localhost:5173"]
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

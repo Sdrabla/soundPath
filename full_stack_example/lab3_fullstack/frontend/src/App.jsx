@@ -84,13 +84,51 @@ export default function App() {
   return (
     <div className="page">
       <header className="header">
-        <h1>Books</h1>
+        <h1 className="brand">
+          soundPath
+          <button
+            type="button"
+            className="refresh-btn"
+            aria-label="Refresh"
+            title="Refresh"
+            onClick={() => window.location.reload()}
+          >
+            <svg className="refresh-icon" viewBox="0 0 48 48" aria-hidden="true">
+              <defs>
+                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <circle cx="24" cy="24" r="22" fill="currentColor" opacity="0.15" />
+              <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.25" />
+              <circle cx="24" cy="24" r="16" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.25" />
+              <circle cx="24" cy="24" r="12" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.25" />
+              <circle cx="24" cy="24" r="7"  fill="currentColor" opacity="0.5" />
+              <circle cx="24" cy="24" r="2"  fill="currentColor" />
+
+              {/* glowing holes around the rim */}
+              <g filter="url(#glow)">
+                <circle cx="42"    cy="24"    r="1.9" fill="#ff5555" />
+                <circle cx="33"    cy="8.412" r="1.9" fill="#ffd166" />
+                <circle cx="15"    cy="8.412" r="1.9" fill="#06d6a0" />
+                <circle cx="6"     cy="24"    r="1.9" fill="#118ab2" />
+                <circle cx="15"    cy="39.588" r="1.9" fill="#8338ec" />
+                <circle cx="33"    cy="39.588" r="1.9" fill="#ef476f" />
+              </g>
+            </svg>
+          </button>
+        </h1>
+
         <span className="api-hint">{API_BASE}</span>
       </header>
-
       <main className="grid">
         <section className="panel">
-          <h2 className="panel-title">All Books</h2>
+          <h2 className="panel-title">All Equipment</h2>
           {listLoading && <p className="muted">Loading…</p>}
           {listError && <p className="error">Error: {listError}</p>}
           {!listLoading && !hasBooks && !listError && (
@@ -107,7 +145,7 @@ export default function App() {
                     title="View details"
                   >
                     <span className="book-title">{b.title}</span>
-                    {b.author && <span className="book-author">by {b.author}</span>}
+                    {b.author && <span className="book-author">from {b.author}</span>}
                   </button>
                 </li>
               );
@@ -116,8 +154,8 @@ export default function App() {
         </section>
 
         <section className="panel">
-          <h2 className="panel-title">Book Details</h2>
-          {!selectedId && <p className="muted">Select a book to see details.</p>}
+          <h2 className="panel-title">Equipment Details</h2>
+          {!selectedId && <p className="muted">Select a equipment to see details.</p>}
           {bookLoading && <p className="muted">Loading details…</p>}
           {bookError && <p className="error">Error: {bookError}</p>}
           {!!book && !bookLoading && !bookError && (
@@ -127,19 +165,19 @@ export default function App() {
                 <span className="value">{show(book.id || book._id || selectedId)}</span>
               </div>
               <div className="detail-row">
-                <span className="label">Title</span>
+                <span className="label">Equipment Name</span>
                 <span className="value">{show(book.title)}</span>
               </div>
               <div className="detail-row">
-                <span className="label">Author</span>
+                <span className="label">Owner</span>
                 <span className="value">{show(book.author)}</span>
               </div>
               <div className="detail-row">
-                <span className="label">Genre</span>
+                <span className="label">Status</span>
                 <span className="value">{show(book.genre)}</span>
               </div>
               <div className="detail-row">
-                <span className="label">Year</span>
+                <span className="label">Price</span>
                 <span className="value">{show(book.year)}</span>
               </div>
             </div>

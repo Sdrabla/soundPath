@@ -90,3 +90,69 @@ body {
 .detail-row { display: grid; grid-template-columns: 120px 1fr; gap: 12px; }
 .label { color: #a8b3c2; }
 .value { color: var(--text); }
+
+
+/*  SVG LOGO STUFF */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.refresh-btn {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--border, rgba(255,255,255,0.25));
+  background: transparent;
+  color: var(--accent, #ffdd55);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform .08s ease,
+    background .15s ease,
+    border-color .15s ease,
+    box-shadow .15s ease,
+    color .15s ease;
+}
+
+.refresh-btn:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: var(--ring, #d6b622);
+}
+
+.refresh-btn:active {
+  transform: scale(0.96);
+  background: rgba(255,255,255,0.1);
+}
+
+.refresh-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(214, 182, 34, 0.45);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--ring, #d6b622) 45%, transparent);
+}
+
+.refresh-icon {
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.refresh-btn:is(:hover, :focus-visible, :active) .refresh-icon {
+  animation: sp-vinyl 1.2s linear infinite;
+}
+
+@keyframes sp-vinyl {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .refresh-btn:is(:hover, :focus-visible, :active) .refresh-icon {
+    animation: none;
+  }
+}
+
