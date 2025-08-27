@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SoundPath Questionnaire</title>
+  <style>
+    body {
+      font-family: 'Trebuchet MS', sans-serif;
+      background-color: #8e939d;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      padding: 20px 40px;
+      font-weight: bold;
+      font-size: 2rem;
+      color: #111;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 30px;
+      background: #234956;
+      border-radius: 20px;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
+      color: white;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    select, input[type="text"], textarea {
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+    }
+
+    button {
+      display: block;
+      margin: 30px auto 0;
+      padding: 12px 25px;
+      background: linear-gradient(135deg, #f9d423, #ff4e50);
+      border: none;
+      border-radius: 30px;
+      color: #111;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <header>soundPath</header>
+
+  <div class="container">
+    <h2>Tell us about your musical journey 🎶</h2>
+    <form id="questionnaireForm">
+      <label for="experience">How would you describe your experience level?</label>
+      <select id="experience" name="experience" required>
+        <option value="">-- Select --</option>
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+
+      <label for="instrument">What instrument are you most interested in?</label>
+      <input type="text" id="instrument" name="instrument" placeholder="e.g., Guitar, Piano, Drums" required />
+
+      <label for="goal">What’s your main goal with music?</label>
+      <textarea id="goal" name="goal" rows="3" placeholder="e.g., Start a band, play casually, improve skills" required></textarea>
+
+      <label for="genre">Which genres do you enjoy?</label>
+      <select id="genre" name="genre" required>
+        <option value="">-- Select --</option>
+        <option value="jazz">Jazz</option>
+        <option value="pop">Pop</option>
+        <option value="hiphop">Hip Hop</option>
+        <option value="rock">Rock</option>
+        <option value="classical">Classical</option>
+      </select>
+
+      <label for="currentGear">What gear do you currently own?</label>
+      <textarea id="currentGear" name="currentGear" rows="3" placeholder="e.g., Scarlett 2i2, Yamaha HS5 monitors, MIDI keyboard" required></textarea>
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("questionnaireForm").addEventListener("submit", function(e) {
+      e.preventDefault(); // stop "Cannot POST"
+
+      const experience = document.getElementById("experience").value;
+      const instrument = document.getElementById("instrument").value;
+      const goal = document.getElementById("goal").value;
+      const genre = document.getElementById("genre").value;
+      const currentGear = document.getElementById("currentGear").value;
+
+      alert(`✅ Thanks for submitting!\n\nExperience: ${experience}\nInstrument: ${instrument}\nGoal: ${goal}\nGenre: ${genre}\nCurrent Gear: ${currentGear}`);
+    });
+  </script>
+</body>
+</html>
