@@ -55,6 +55,21 @@ function LandingPage() {
           <button id="signup-button" onClick={handleGetStarted}>
             Get Started
           </button>
+          <button 
+            onClick={() => navigate("/questionnaire")} 
+            style={{
+              background: "#4ea1ff",
+              color: "white",
+              border: "none",
+              padding: "0.75rem 1.5rem",
+              borderRadius: "4px",
+              marginLeft: "1rem",
+              cursor: "pointer",
+              fontSize: "1rem"
+            }}
+          >
+            Test Questionnaire
+          </button>
         </>
       )}
       
