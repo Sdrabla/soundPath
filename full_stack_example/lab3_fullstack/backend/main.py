@@ -79,3 +79,43 @@ async def delete_book(book_id: str):
     ok = await books.delete_book(book_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Book not found")
+
+
+#user_profiling
+from managers.profile_manager import ProfilesManager
+from models.profile_model import ProfileCreate, ProfileOut
+
+MONGO_URI = "mongodb://127.0.0.1:27017"  # local MongoDB
+DB_NAME = "musicdb"                       # name of your database
+
+@app.get("/ping")
+async def ping():
+    return {"message": "pong"}
+
+profiles: ProfilesManager | None = None
+
+@app.on_event("startup")
+async def startup_profiles():
+    global profiles
+    profiles = ProfilesManager(MONGO_URI, DB_NAME, "profiles")
+    await profiles.connect()
+
+@app.on_event("shutdown")
+async def shutdown_profiles():
+    if profiles:
+        await profiles.close()
+
+@app.post("/profiles", response_model=ProfileOut, status_code=201)
+async def create_profile(data: ProfileCreate):
+    assert profiles is not None
+    return await profiles.create_profile(data)
+
+from typing import List
+
+@app.get("/profiles", response_model=List[ProfileOut])
+async def list_profiles():
+    assert profiles is not None
+    return await profiles.list_profiles()
+
+
+
