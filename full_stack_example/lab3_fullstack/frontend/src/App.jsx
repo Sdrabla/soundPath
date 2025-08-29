@@ -1,189 +1,119 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import "./App.css";
+import Login from "./components/Login.jsx";
+import Dashboard from "./components/Dashboard.jsx";
+import Questionnaire from "./components/Questionnaire.jsx";
 
-const API_BASE = (
-  import.meta.env.VITE_API_BASE_URL ??
-  import.meta.env.VITE_API_BASE ??
-  "/api"
-).replace(/\/+$/, "");
+function LandingPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [userEmail, setUserEmail] = useState("");
+  const [authError, setAuthError] = useState("");
 
-export default function App() {
-  const [books, setBooks] = useState([]);
-  const [listLoading, setListLoading] = useState(true);
-  const [listError, setListError] = useState("");
-
-  const [selectedId, setSelectedId] = useState(null);
-  const [bookLoading, setBookLoading] = useState(false);
-  const [bookError, setBookError] = useState("");
-  const [book, setBook] = useState(null);
-
-  const show = (v) => (v === 0 || v ? String(v) : "—");
-
-  // Load list once
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setListLoading(true);
-        setListError("");
-        const res = await fetch(`${API_BASE}/books`);
-        if (!res.ok) throw new Error(`List fetch failed: ${res.status}`);
-        const data = await res.json();
-        if (!cancelled) setBooks(data);
-      } catch (err) {
-        if (!cancelled) setListError(err?.message || "Failed to load books.");
-      } finally {
-        if (!cancelled) setListLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Load details on selection
-  useEffect(() => {
-    if (!selectedId) {
-      setBook(null);
-      setBookError("");
-      return;
+    // Check for OAuth callback parameters
+    const urlParams = new URLSearchParams(location.search);
+    const user = urlParams.get('user');
+    const error = urlParams.get('error');
+    
+    if (user) {
+      setUserEmail(user);
+      // Clear the URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // Redirect to dashboard with user email
+      setTimeout(() => {
+        navigate("/dashboard", { state: { userEmail: user } });
+      }, 1000);
     }
-    let cancelled = false;
-    (async () => {
-      try {
-        setBookLoading(true);
-        setBookError("");
-        const res = await fetch(
-          `${API_BASE}/books/${encodeURIComponent(selectedId)}`
-        );
-        if (!res.ok) throw new Error(`Detail fetch failed: ${res.status}`);
-        const data = await res.json();
-        if (!cancelled) setBook(data);
-      } catch (err) {
-        if (!cancelled) {
-          setBookError(err?.message || "Failed to load book details.");
-          setBook(null);
-        }
-      } finally {
-        if (!cancelled) setBookLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedId]);
+    
+    if (error) {
+      setAuthError("Authentication failed. Please try again.");
+      // Clear the URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [location, navigate]);
 
-  const hasBooks = useMemo(
-    () => Array.isArray(books) && books.length > 0,
-    [books]
-  );
-
-  const handleBookClick = (id) => {
-    setSelectedId((cur) => (cur === id ? null : id));
+  const handleGetStarted = () => {
+    navigate("/login");
   };
 
   return (
-    <div className="page">
-      <header className="header">
-        <h1 className="brand">
-          soundPath
-          <button
-            type="button"
-            className="refresh-btn"
-            aria-label="Refresh"
-            title="Refresh"
-            onClick={() => window.location.reload()}
-          >
-            <svg className="refresh-icon" viewBox="0 0 48 48" aria-hidden="true">
-              <defs>
-                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-
-              <circle cx="24" cy="24" r="22" fill="currentColor" opacity="0.15" />
-              <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.25" />
-              <circle cx="24" cy="24" r="16" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.25" />
-              <circle cx="24" cy="24" r="12" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.25" />
-              <circle cx="24" cy="24" r="7"  fill="currentColor" opacity="0.5" />
-              <circle cx="24" cy="24" r="2"  fill="currentColor" />
-
-              {/* glowing holes around the rim */}
-              <g filter="url(#glow)">
-                <circle cx="42"    cy="24"    r="1.9" fill="#ff5555" />
-                <circle cx="33"    cy="8.412" r="1.9" fill="#ffd166" />
-                <circle cx="15"    cy="8.412" r="1.9" fill="#06d6a0" />
-                <circle cx="6"     cy="24"    r="1.9" fill="#118ab2" />
-                <circle cx="15"    cy="39.588" r="1.9" fill="#8338ec" />
-                <circle cx="33"    cy="39.588" r="1.9" fill="#ef476f" />
-              </g>
-            </svg>
+    <div className="landing-page">
+      <h1>soundPath</h1>
+      <h3>Find the right gear for your sound</h3>
+      
+      {userEmail ? (
+        <div className="user-welcome">
+          <p>Welcome back, {userEmail}!</p>
+          <p>Redirecting to dashboard...</p>
+        </div>
+      ) : (
+        <>
+          <p>Find personalized equipment, starter kits, and join communities all in one place! </p>
+          <p>Sign up today and start your musical journey</p>
+          <button id="signup-button" onClick={handleGetStarted}>
+            Get Started
           </button>
-        </h1>
-
-        <span className="api-hint">{API_BASE}</span>
-      </header>
-      <main className="grid">
-        <section className="panel">
-          <h2 className="panel-title">All Equipment</h2>
-          {listLoading && <p className="muted">Loading…</p>}
-          {listError && <p className="error">Error: {listError}</p>}
-          {!listLoading && !hasBooks && !listError && (
-            <p className="muted">No books yet.</p>
-          )}
-          <ul className="book-list">
-            {books.map((b) => {
-              const id = b.id || b._id || b.book_id;
-              return (
-                <li key={id}>
-                  <button
-                    className={"book-item" + (id === selectedId ? " selected" : "")}
-                    onClick={() => handleBookClick(id)}
-                    title="View details"
-                  >
-                    <span className="book-title">{b.title}</span>
-                    {b.author && <span className="book-author">from {b.author}</span>}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-
-        <section className="panel">
-          <h2 className="panel-title">Equipment Details</h2>
-          {!selectedId && <p className="muted">Select a equipment to see details.</p>}
-          {bookLoading && <p className="muted">Loading details…</p>}
-          {bookError && <p className="error">Error: {bookError}</p>}
-          {!!book && !bookLoading && !bookError && (
-            <div className="details">
-              <div className="detail-row">
-                <span className="label">ID</span>
-                <span className="value">{show(book.id || book._id || selectedId)}</span>
-              </div>
-              <div className="detail-row">
-                <span className="label">Equipment Name</span>
-                <span className="value">{show(book.title)}</span>
-              </div>
-              <div className="detail-row">
-                <span className="label">Owner</span>
-                <span className="value">{show(book.author)}</span>
-              </div>
-              <div className="detail-row">
-                <span className="label">Status</span>
-                <span className="value">{show(book.genre)}</span>
-              </div>
-              <div className="detail-row">
-                <span className="label">Price</span>
-                <span className="value">{show(book.year)}</span>
-              </div>
-            </div>
-          )}
-        </section>
-      </main>
+          <button 
+            onClick={() => navigate("/questionnaire")} 
+            style={{
+              background: "#4ea1ff",
+              color: "white",
+              border: "none",
+              padding: "0.75rem 1.5rem",
+              borderRadius: "4px",
+              marginLeft: "1rem",
+              cursor: "pointer",
+              fontSize: "1rem"
+            }}
+          >
+            Test Questionnaire
+          </button>
+        </>
+      )}
+      
+      {authError && (
+        <div className="auth-error">
+          <p>{authError}</p>
+        </div>
+      )}
+      
+      <img src="/vinyl-img.svg" alt="vinyl record" id="vinyl-img" />
+      
+      <div id="info-section">
+        <h2> Why choose soundPath?</h2>
+        <div className="info-item">
+          <h3>Personalized Equipment Recommendations</h3>
+          <p>You tell us how advanced you are and what your 
+              looking for and well give you a personalized list 
+              of what we think you'll love!</p>
+        </div>
+        <div className="info-item">
+          <h3>Starter Kits</h3>
+          <p>Just starting out? No biggie! Well give you 
+              a step-by-step checklist of the essentials you 
+              need to thrive!</p>
+        </div>
+        <div className="info-item">
+          <h3>Unbiased Rankings</h3>
+          <p>Unlike generic review sites, we provide 
+              upgrade guidance, education and community. This 
+              allows you to spend less time researching and more time 
+              doing what you love!</p>
+        </div>
+      </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/questionnaire" element={<Questionnaire />} />
+    </Routes>
   );
 }

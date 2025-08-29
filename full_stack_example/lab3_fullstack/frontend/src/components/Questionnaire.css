@@ -1,0 +1,106 @@
+.questionnaire-page {
+  font-family: 'Trebuchet MS', sans-serif;
+  background-color: #8e939d;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+.questionnaire-header {
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.questionnaire-header h1 {
+  font-weight: bold;
+  font-size: 2rem;
+  color: #111;
+  margin: 0;
+}
+
+.back-btn {
+  background: #E7EB90;
+  color: #0B3948;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.back-btn:hover {
+  background: #d3d66e;
+}
+
+.container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #234956;
+  border-radius: 20px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
+  color: white;
+}
+
+.container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+select, input[type="text"], textarea {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+}
+
+button[type="submit"] {
+  display: block;
+  margin: 30px auto 0;
+  padding: 12px 25px;
+  background: linear-gradient(135deg, #f9d423, #ff4e50);
+  border: none;
+  border-radius: 30px;
+  color: #111;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+  transition: transform 0.2s;
+}
+
+button[type="submit"]:hover {
+  transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    margin: 20px;
+    padding: 20px;
+  }
+  
+  .questionnaire-header {
+    padding: 15px 20px;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .questionnaire-header h1 {
+    font-size: 1.5rem;
+  }
+}
