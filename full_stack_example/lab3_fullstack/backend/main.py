@@ -119,6 +119,77 @@ async def auth(request: Request):
         return RedirectResponse(url=f"{FRONTEND_URL}/?error=unexpected&description=Unexpected error")
 
 
+      #user_profiling
+from managers.profile_manager import ProfilesManager
+from models.profile_model import ProfileCreate, ProfileOut
+
+MONGO_URI = "mongodb://127.0.0.1:27017"  # local MongoDB
+DB_NAME = "musicdb"                       # name of your database
+
+@app.get("/ping")
+async def ping():
+    return {"message": "pong"}
+
+profiles: ProfilesManager | None = None
+
+@app.on_event("startup")
+async def startup_profiles():
+    global profiles
+    profiles = ProfilesManager(MONGO_URI, DB_NAME, "profiles")
+    await profiles.connect()
+
+@app.on_event("shutdown")
+async def shutdown_profiles():
+    if profiles:
+        await profiles.close()
+
+      
+      # ---------- User Routes ----------
+@app.post("/api/register", response_model=UserOut, status_code=201)
+async def register_user(data: UserCreate):
+    """Register a new user"""
+    assert users is not None
+    try:
+        user = await users.register_user(data)
+        # Create token for the new user
+        token = users.create_token(user.id, user.email)
+        return {
+            "success": True,
+            "message": "User registered successfully",
+            "token": token,
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email
+            }
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.post("/api/login")
+async def login_user(data: UserLogin):
+    """Login a user"""
+    assert users is not None
+    try:
+        user, token = await users.authenticate_user(data)
+        return {
+            "success": True,
+            "message": "Login successful",
+            "token": token,
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email
+            }
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal server error")
+      
+      
 # ---------- Managers ----------
 books: BooksManager | None = None
 profiles: ProfilesManager | None = None
@@ -194,58 +265,16 @@ async def delete_book(book_id: str):
     if not ok:
         raise HTTPException(status_code=404, detail="Book not found")
 
-# ---------- Profile Routes ----------
+
 @app.post("/profiles", response_model=ProfileOut, status_code=201)
 async def create_profile(data: ProfileCreate):
     assert profiles is not None
     return await profiles.create_profile(data)
+
 
 @app.get("/profiles", response_model=List[ProfileOut])
 async def list_profiles():
     assert profiles is not None
     return await profiles.list_profiles()
 
-# ---------- User Routes ----------
-@app.post("/api/register", response_model=UserOut, status_code=201)
-async def register_user(data: UserCreate):
-    """Register a new user"""
-    assert users is not None
-    try:
-        user = await users.register_user(data)
-        # Create token for the new user
-        token = users.create_token(user.id, user.email)
-        return {
-            "success": True,
-            "message": "User registered successfully",
-            "token": token,
-            "user": {
-                "id": user.id,
-                "name": user.name,
-                "email": user.email
-            }
-        }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
 
-@app.post("/api/login")
-async def login_user(data: UserLogin):
-    """Login a user"""
-    assert users is not None
-    try:
-        user, token = await users.authenticate_user(data)
-        return {
-            "success": True,
-            "message": "Login successful",
-            "token": token,
-            "user": {
-                "id": user.id,
-                "name": user.name,
-                "email": user.email
-            }
-        }
-    except ValueError as e:
-        raise HTTPException(status_code=401, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Internal server error")
