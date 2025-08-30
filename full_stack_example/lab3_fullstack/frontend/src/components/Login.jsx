@@ -53,7 +53,7 @@ export default function Login() {
           <button type="submit">Login</button>
         </form>
         <div className="signup-link">
-          Don't have an account? <a href="/register">Sign up</a>
+          Don't have an account? <button onClick={() => navigate("/register")} style={{ background: "none", border: "none", color: "#007bff", cursor: "pointer", textDecoration: "underline", padding: 0, font: "inherit" }}>Sign up</button>
         </div>
       </div>
     </div>

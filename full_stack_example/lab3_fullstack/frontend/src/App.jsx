@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import "./App.css";
 import Login from "./components/Login.jsx";
+import Register from "./components/Register.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import Questionnaire from "./components/Questionnaire.jsx";
 
@@ -9,7 +10,7 @@ function LandingPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [userEmail, setUserEmail] = useState("");
-  const [authError, setAuthError] = useState("");
+  // Removed authError state - no longer needed
 
   useEffect(() => {
     // Check for OAuth callback parameters
@@ -18,20 +19,18 @@ function LandingPage() {
     const error = urlParams.get('error');
     
     if (user) {
+      console.log('Setting user email and redirecting to dashboard...');
       setUserEmail(user);
       // Clear the URL parameters
       window.history.replaceState({}, document.title, window.location.pathname);
       // Redirect to dashboard with user email
       setTimeout(() => {
+        console.log('Navigating to dashboard with user:', user);
         navigate("/dashboard", { state: { userEmail: user } });
-      }, 1000);
+      }, 2000);
     }
     
-    if (error) {
-      setAuthError("Authentication failed. Please try again.");
-      // Clear the URL parameters
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
+    // Removed error handling - let Google show its own error pages
   }, [location, navigate]);
 
   const handleGetStarted = () => {
@@ -55,14 +54,25 @@ function LandingPage() {
           <button id="signup-button" onClick={handleGetStarted}>
             Get Started
           </button>
+          <button 
+            onClick={() => navigate("/questionnaire")} 
+            style={{
+              background: "#4ea1ff",
+              color: "white",
+              border: "none",
+              padding: "0.75rem 1.5rem",
+              borderRadius: "4px",
+              marginLeft: "1rem",
+              cursor: "pointer",
+              fontSize: "1rem"
+            }}
+          >
+            Test Questionnaire
+          </button>
         </>
       )}
       
-      {authError && (
-        <div className="auth-error">
-          <p>{authError}</p>
-        </div>
-      )}
+      {/* Removed error display - Google will show its own error pages */}
       
       <img src="/vinyl-img.svg" alt="vinyl record" id="vinyl-img" />
       
@@ -97,6 +107,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/questionnaire" element={<Questionnaire />} />
     </Routes>
